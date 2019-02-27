@@ -6,7 +6,7 @@
 
 # VARIABLE                  VALUE     MEANING
 # --------------------------------------------------
-# subject_nr                numeric   subject identifier
+# subject_nr                numeric   subject identifier (not unique!)
 # Session                   numeric   session (1 or 2)
 # accuracy                  numeric   accuracy, not meaningful
 # response_time             numeric   response time in ms
@@ -17,17 +17,18 @@
 # condition                 char      frequent distractor half (top or bottom)
 # distractor                char      present/absent
 # distractor_color          char      color as hex value
-# distractor_location       numeric   location in degrees
+# distractor_location       numeric   location in degrees, (0 = 3 o'clock, 270 = 12 o'clock)
 # distractor_orient         numeric   distractor orientation
 # distractor_pos            numeric   distractor in frequent or rare half (9 = freq, 1 = rare, 0 = absent)
 # distractor_type           char      orient or color distractor
 # target_color              char      color as hex value
 # target_identity           char      i or ! (bang)
-# target_location           char      location in degrees
+# target_location           char      location in degrees, (0 = 3 o'clock, 270 = 12 o'clock)
 # target_orient             numeric   distractor orientation
 # target_pos                numeric   target in frequent or rare distractor half (9 = freq, 1 = rare)
 # pid                       char      subject identifier made from distractor_type + subject_nr
-# epoch                     numeric   epochs from two consecutive blocks (see below)
+# epoch                     numeric   epochs from two consecutive blocks
+# experiment                char      experiment identifier
 
 #### Set working directory and load libraries
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
@@ -47,7 +48,6 @@ if(!exists("article.ttest", mode="function")) source("http://www.mariansauter.de
 if(!exists("article.ttest_full", mode="function")) source("http://www.mariansauter.de/files/R/r_functions_article.R")
 if(!exists("article.ezANOVA", mode="function")) source("http://www.mariansauter.de/files/R/r_functions_article.R")
 
-
 ##########################################
 ####### Read in data
 # This is the data used in Sauter et al 2019;
@@ -57,21 +57,11 @@ data <- read.table(file="data_LT_E1.csv", sep=",", dec=".", head=TRUE)
 ##########################################
 ####### Some more preprocessing
 
-# Code epochs from block-counts
-data$epoch[data$block_count <= 2] <- 1
-data$epoch[data$block_count > 2 & data$epoch <=4] <- 2
-data$epoch[data$block_count > 4 & data$epoch <=6] <- 3
-data$epoch[data$block_count > 6 & data$epoch <=8] <- 4
-data$epoch[data$block_count > 8 & data$epoch <=10] <- 5
-data$epoch[data$block_count > 10 & data$epoch <=12] <- 6
-
-# Exclude one outlier participant with missing data
-data <- subset(data, pid != "orientNA")
-
 ### Remove error trials 
 n_filtered = nrow(data)
 data <- subset(data, correct == 1)
 nrow(data)/n_filtered
+
 
 ##########################################
 ##########################################
